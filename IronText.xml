@@ -1,0 +1,33 @@
+<eventFormatRecognizer><![CDATA[IronPort-TextMail]]></eventFormatRecognizer>
+<patternDefinitions>
+    <pattern name="gpatCs5"><![CDATA[cs5=(\w+\s?\w+)]]></pattern>
+</patternDefinitions>
+<parsingInstructions>
+<when test="matches($_rawmsg, 'Info:')">
+<collectFieldsByRegex src="$_rawmsg">
+  <regex><![CDATA[Info:\s<details:gPatMesgBody>]]></regex>
+</collectFieldsByRegex>
+</when>
+<choose>
+	<when test="matches($_rawmsg, 'Warning:')">
+	<collectFieldsByRegex src="$_rawmsg">
+  <regex><![CDATA[DNS Response:\s<_body:gPatMesgBody>]]></regex>
+  </collectFieldsByRegex>
+       <collectFieldsByKeyValuePair kvsep="=" sep=" " src="$_body">
+      <attrKeyMap attr="resultCode" key="rcode"/>
+      <attrKeyMap attr="datastore" key="data"/>
+    </collectFieldsByKeyValuePair>
+</when>
+   
+
+
+<when test="matches($_body, 'DNS Response:')">
+	<collectFieldsByRegex src="$_body">
+    <regex><![CDATA[Warning:\s<_body:gPatMesgBody>]]></regex>
+    </collectFieldsByRegex>
+
+</when>
+<otherwise>
+</otherwise>
+</choose>
+</parsingInstructions>

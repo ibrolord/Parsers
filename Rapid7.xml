@@ -1,0 +1,34 @@
+<eventFormatRecognizer><![CDATA[l7log:|vsslproxy:|stats:|mailer:]]></eventFormatRecognizer>
+<patternDefinitions>
+    <pattern name="gpatCs5"><![CDATA[cs5=(\w+\s?\w+)]]></pattern>
+</patternDefinitions>
+<setEventAttribute attr="eventType">Rapid7</setEventAttribute>
+<parsingInstructions>
+    <when test="matches($_rawmsg, 'Connection\stimed\sout')">
+      <collectFieldsByRegex src="$_rawmsg">
+        <regex><![CDATA[Connection\stimed\sout\s<details:gPatMesgBody>]]> </regex>
+      </collectFieldsByRegex>
+      <setEventAttribute attr="eventType">Rapid7 Connection</setEventAttribute>
+    </when>
+    <when test="matches($_rawmsg, 'SMTP')">
+      <collectFieldsByRegex src="$_rawmsg">
+        <regex><![CDATA[\s<details:gPatMesgBody>]]> </regex>
+      </collectFieldsByRegex>
+      <setEventAttribute attr="eventType">Rapid7 Mailer</setEventAttribute>
+    </when>
+    <when test="matches($_rawmsg, 'SSL')">
+      <collectFieldsByRegex src="$_rawmsg">
+        <regex><![CDATA[Client\s<hostIpAddr:gPatMesgBodyMin>\s\w+\sSSL\snegotiation:\s<details:gPatMesgBody>]]></regex>
+      </collectFieldsByRegex>
+      <setEventAttribute attr="eventType">Rapid7 SSL Negotiation</setEventAttribute>
+    </when>
+    <when test="matches($_rawmsg, 'status')">
+      <collectFieldsByKeyValuePair kvsep=":" sep=" " src="$_rawmsg">
+        <attrKeyMap attr="jobStatus" key="SubVSstatus"/>
+        <attrKeyMap attr="ccmStatus" key="VSstatus"/>
+        <attrKeyMap attr="subStatus" key="RSstatus"/>
+      </collectFieldsByKeyValuePair>
+      <setEventAttribute attr="eventType">Rapid7 Status</setEventAttribute>
+    </when>
+</parsingInstructions> 
+

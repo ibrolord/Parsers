@@ -1,0 +1,119 @@
+<eventFormatRecognizer><![CDATA[\[junos\@\d+.+?\]]]></eventFormatRecognizer>
+<patternDefinitions>
+    <pattern name="patAlertType"><![CDATA[RT_FLOW|RT_IDP|RT_IPSEC|snmpd]]></pattern>
+    <pattern name="patReason"><![CDATA[reason\W\"(\w+\s\w+)\"]]></pattern>
+    <pattern name="patIpsecEventType"><![CDATA[\W\s([A-Z_]*)\s]]></pattern>
+</patternDefinitions>
+<parsingInstructions>
+    <collectFieldsByRegex src="$_rawmsg">
+      <regex><![CDATA[<type:patAlertType>.+?\W\d+\s<_body:gPatMesgBody>]]></regex>
+    </collectFieldsByRegex>
+    <when test="matches($type, 'RT_FLOW')">
+      <collectFieldsByKeyValuePair kvsep="=" sep=" " src="$_body">
+        <attrKeyMap attr="appName" key="application"/>
+        <attrKeyMap attr="recvBytes" key="bytes-from-client"/>
+        <attrKeyMap attr="sentBytes" key="bytes-from-server"/>
+        <attrKeyMap attr="destIpAddr" key="destination-address"/>
+        <attrKeyMap attr="destIpPort" key="destination-port"/>
+        <attrKeyMap attr="destFwZone" key="destination-zone-name"/>
+        <attrKeyMap attr="ruleName" key="dst-nat-rule-name"/>
+        <attrKeyMap attr="fwRule" key="dst-nat-rule-type"/>
+        <attrKeyMap attr="elapsedTime" key="elapsed-time"/>
+        <attrKeyMap attr="encryptAlgo" key="encrypted"/>
+        <attrKeyMap attr="icmpType" key="icmp-type"/>
+        <attrKeyMap attr="preNATDestIpAddr" key="nat-destination-address"/>
+        <attrKeyMap attr="preNATDestIpPort" key="nat-destination-port"/>
+        <attrKeyMap attr="postNATSrcIpAddr" key="nat-source-address"/>
+        <attrKeyMap attr="postNATSrcIpPort" key="nat-source-port"/>
+        <attrKeyMap attr="appCategory" key="nested-application"/>
+        <attrKeyMap attr="srcIntfName" key="packet-incoming-interface"/>
+        <attrKeyMap attr="sentPkts" key="packets-from-client"/>
+        <attrKeyMap attr="recvPkts" key="packets-from-server"/>
+        <attrKeyMap attr="policyName" key="policy-name"/>
+        <attrKeyMap attr="ipProto" key="protocol-id"/>
+        <attrKeyMap attr="role" key="roles"/>
+        <attrKeyMap attr="serviceName" key="service-name"/>
+        <attrKeyMap attr="sessionId" key="session-id-32"/>
+        <attrKeyMap attr="srcIpAddr" key="source-address"/>
+        <attrKeyMap attr="srcIpPort" key="source-port"/>
+        <attrKeyMap attr="srcFwZone" key="source-zone-name"/>
+        <attrKeyMap attr="srcNATRuleName" key="src-nat-rule-name"/>
+        <attrKeyMap attr="srcNATRuleType" key="src-nat-rule-type"/>
+        <attrKeyMap attr="user" key="username"/>
+      </collectFieldsByKeyValuePair>
+      <collectFieldsByRegex src="$_rawmsg">
+        <regex><![CDATA[<eventType:patIpsecEventType>]]></regex>
+      </collectFieldsByRegex>
+      <setEventAttribute attr="eventType">combineMsgId("Juniper OS", $eventType)</setEventAttribute>
+    </when>
+    <when test="matches($type, 'RT_IDP')">
+<setEventAttribute attr="eventSeverity">10</setEventAttribute>
+      <collectFieldsByKeyValuePair kvsep="=" sep=" " src="$_body">
+        <attrKeyMap attr="eventAction" key="action"/>
+        <attrKeyMap attr="alertName" key="alert"/>
+        <attrKeyMap attr="appName" key="application-name"/>
+        <attrKeyMap attr="attackName" key="attack-name"/>
+        <attrKeyMap attr="destIpAddr" key="destination-address"/>
+        <attrKeyMap attr="destIntfName" key="destination-interface-name"/>
+        <attrKeyMap attr="destIpPort" key="destination-port"/>
+        <attrKeyMap attr="destFwZone" key="destination-zone-name"/>
+        <attrKeyMap attr="elapsedTime" key="elapsed-time"/>
+        <attrKeyMap attr="epochTime" key="epoch-time"/>
+        <attrKeyMap attr="exportId" key="export-id"/>
+        <attrKeyMap attr="recvBytes" key="inbound-bytes"/>
+        <attrKeyMap attr="recvPkts" key="inbound-packets"/>
+        <attrKeyMap attr="msg" key="message"/>
+        <attrKeyMap attr="alertCategory" key="message-type"/>
+        <attrKeyMap attr="preNATDestIpAddr" key="nat-destination-address"/>
+        <attrKeyMap attr="preNATDestIpPort" key="nat-destination-port"/>
+        <attrKeyMap attr="postNATSrcIpAddr" key="nat-source-address"/>
+        <attrKeyMap attr="postNATSrcIpPort" key="nat-source-port"/>
+        <attrKeyMap attr="sentBytes" key="outbound-bytes"/>
+        <attrKeyMap attr="sentPkts" key="outbound-packets"/>
+        <attrKeyMap attr="packetLogId" key="packet-log-id"/>
+        <attrKeyMap attr="policyName" key="policy-name"/>
+        <attrKeyMap attr="appTransportProto" key="protocol-name"/>
+        <attrKeyMap attr="count" key="repeat-count"/>
+        <attrKeyMap attr="role" key="roles"/>
+        <attrKeyMap attr="fwRule" key="rule-name"/>
+        <attrKeyMap attr="ruleName" key="rulebase-name"/>
+        <attrKeyMap attr="serviceName" key="service-name"/>
+        <attrKeyMap attr="srcIpAddr" key="source-address"/>
+        <attrKeyMap attr="srcIntfName" key="source-interface-name"/>
+        <attrKeyMap attr="srcIpPort" key="source-port"/>
+        <attrKeyMap attr="srcFwZone" key="source-zone-name"/>
+        <attrKeyMap attr="eventType" key="threat-severity"/>
+        <attrKeyMap attr="user" key="username"/>
+      </collectFieldsByKeyValuePair>
+      <collectFieldsByRegex src="$_rawmsg">
+        <regex><![CDATA[<eventType:patIpsecEventType>]]></regex>
+      </collectFieldsByRegex>
+      <setEventAttribute attr="eventType">combineMsgId("Juniper OS", $eventType)</setEventAttribute>
+    </when>
+    <when test="matches($type, 'RT_IPSEC')">
+      <collectFieldsByKeyValuePair kvsep="=" sep=" " src="$_body">
+        <attrKeyMap attr="destIpAddr" key="destination-address"/>
+        <attrKeyMap attr="index" key="index"/>
+        <attrKeyMap attr="intfName" key="interface-name"/>
+        <attrKeyMap attr="msgLen" key="length"/>
+        <attrKeyMap attr="seqNum" key="sequence-number"/>
+        <attrKeyMap attr="srcIpAddr" key="source-address"/>
+        <attrKeyMap attr="tunnelId" key="tunnel-id"/>
+        <attrKeyMap attr="type" key="type"/>
+      </collectFieldsByKeyValuePair>
+      <collectFieldsByRegex src="$_rawmsg">
+        <regex><![CDATA[<eventType:patIpsecEventType>]]></regex>
+      </collectFieldsByRegex>
+      <setEventAttribute attr="eventType">combineMsgId("Juniper OS", $eventType)</setEventAttribute>
+    </when>
+    <when test="matches($type, 'snmpd')">
+      <collectFieldsByKeyValuePair kvsep="=" sep=" " src="$_body">
+        <attrKeyMap attr="srcIpAddr" key="source-address"/>
+        <attrKeyMap attr="destIpAddr" key="destination-address"/>
+        <attrKeyMap attr="funName" key="function-name"/>
+        <attrKeyMap attr="index" key="index1"/>
+        <attrKeyMap attr="msg" key="message"/>
+      </collectFieldsByKeyValuePair>
+      <setEventAttribute attr="eventType">combineMsgId("Juniper OS-", $msg)</setEventAttribute>
+    </when>
+</parsingInstructions>

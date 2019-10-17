@@ -1,0 +1,180 @@
+<eventFormatRecognizer><![CDATA[\[OFFICE365_EVENT_DATA\] = \s*]]></eventFormatRecognizer>
+<patternDefinitions>
+    <pattern name="patExchangeMetaData"><![CDATA[\w.+?\}]]></pattern>
+    <pattern name="patCatch"><![CDATA[.+?]]></pattern>
+</patternDefinitions>
+<parsingInstructions>
+    <collectFieldsByRegex src="$_rawmsg">
+      <regex><![CDATA[\[OFFICE365_EVENT_DATA\] = <_body:gPatMesgBody>]]></regex>
+    </collectFieldsByRegex>
+    <when test="matches($_rawmsg, 'OperationProperties')">
+      <collectFieldsByRegex src="$_rawmsg">
+        <regex><![CDATA[OperationProperties\W.+?\"<operationProperties:patCatch>\]]]></regex>
+      </collectFieldsByRegex>
+      <setEventAttribute attr="operationProperties">replaceStringByRegex($operationProperties,"\{|\}","")</setEventAttribute>
+    </when>
+    <when test="matches($_rawmsg, 'Recipients')">
+      <collectFieldsByRegex src="$_rawmsg">
+        <regex><![CDATA[Recipients\W+<_recipientInfo:patCatch>\"\]]]></regex>
+      </collectFieldsByRegex>
+      <setEventAttribute attr="recipient">$_recipientInfo</setEventAttribute>
+    </when>
+    <when test="matches($_rawmsg, 'AttachmentData')">
+      <collectFieldsByRegex src="$_rawmsg">
+        <regex><![CDATA[AttachmentData\W+?<_attachInfo:patExchangeMetaData>]]></regex>
+      </collectFieldsByRegex>
+      <setEventAttribute attr="_attachInfo">replaceStringByRegex($_attachInfo,"[\[\]\"\{\}]","")</setEventAttribute>
+      <collectFieldsByKeyValuePair kvsep=":" sep="," src="$_attachInfo">
+        <attrKeyMap attr="fileName" key="FileName"/>
+        <attrKeyMap attr="fileType" key="FileType"/>
+        <attrKeyMap attr="fileVerdict" key="FileVerdict"/>
+        <attrKeyMap attr="malwareFamily" key="MalwareFamily"/>
+        <attrKeyMap attr="hashSHA256" key="SHA256"/>
+      </collectFieldsByKeyValuePair>
+    </when>
+    <when test="matches($_rawmsg, 'ExchangeMetaData')">
+      <collectFieldsByRegex src="$_rawmsg">
+        <regex><![CDATA[ExchangeMetaData\W+?<_body2:patExchangeMetaData>]]></regex>
+      </collectFieldsByRegex>
+      <setEventAttribute attr="_body2">replaceStringByRegex($_body2,"[\[\]\"\{\}]","")</setEventAttribute>
+      <collectFieldsByKeyValuePair kvsep=":" sep="," src="$_body2">
+        <attrKeyMap attr="bccMailAddr" key="BCC"/>
+        <attrKeyMap attr="ccMailAddr" key="CC"/>
+        <attrKeyMap attr="senderMailAddr" key="From"/>
+        <attrKeyMap attr="smtpMsgId" key="MessageID"/>
+        <attrKeyMap attr="receiverMailCount" key="RecipientCount"/>
+        <attrKeyMap attr="exchMboxSentTime" key="Sent"/>
+        <attrKeyMap attr="mailSubject" key="Subject"/>
+        <attrKeyMap attr="receiverMailAddr" key="To"/>
+      </collectFieldsByKeyValuePair>
+    </when>
+    <when test="matches($_rawmsg, 'PolicyDetails')">
+      <collectFieldsByRegex src="$_rawmsg">
+        <regex><![CDATA[PolicyDetails\W+<_body3:gPatMesgBody>]]></regex>
+      </collectFieldsByRegex>
+      <setEventAttribute attr="_body3">replaceStringByRegex($_body3,"[\[\]\"\{\}]","")</setEventAttribute>
+      <setEventAttribute attr="_body3">replaceStringByRegex($_body3,"SensitiveInformation\W","")</setEventAttribute>
+      <collectFieldsByKeyValuePair kvsep=":" sep="," src="$_body3">
+        <attrKeyMap attr="policy" key="PolicyName"/>
+        <attrKeyMap attr="confidence" key="Confidence"/>
+        <attrKeyMap attr="count" key="Count"/>
+        <attrKeyMap attr="fileName" key="Location"/>
+        <attrKeyMap attr="sensitiveType" key="SensitiveType"/>
+        <attrKeyMap attr="uniqueCount" key="UniqueCount"/>
+        <attrKeyMap attr="ruleId" key="RuleId"/>
+        <attrKeyMap attr="ruleMode" key="RuleMode"/>
+        <attrKeyMap attr="ruleName" key="RuleName"/>
+        <attrKeyMap attr="ruleSeverity" key="Severity"/>
+      </collectFieldsByKeyValuePair>
+    </when>
+    <setEventAttribute attr="eventType">MS_OFFICE365_Generic</setEventAttribute>
+<!-- <setEventAttribute attr="_bodyTemp">replaceStringByRegex($_body, "\"", "")</setEventAttribute> -->
+    <collectAndSetAttrByJSON src="$_body">
+      <attrKeyMap attr="accountId" key="TenantId"/>
+      <attrKeyMap attr="_actionTime" key="CreationTime"/>
+      <attrKeyMap attr="alertCategory" key="Category"/>
+      <attrKeyMap attr="incidentComments" key="Comments"/>
+      <attrKeyMap attr="alertName" key="Name"/>
+      <attrKeyMap attr="opName" key="Operation"/>
+      <attrKeyMap attr="recordType" key="RecordType"/>
+      <attrKeyMap attr="srcIpAddr" key="ClientIP"/>
+      <attrKeyMap attr="oid" key="ObjectId"/>
+      <attrKeyMap attr="type" key="AlertType"/>
+      <attrKeyMap attr="srcFilePath" key="SourceRelativeUrl"/>
+      <attrKeyMap attr="srcFileName" key="SourceFileName"/>
+      <attrKeyMap attr="srcFileExt" key="SourceFileExtension"/>
+      <attrKeyMap attr="destFilePath" key="DestinationRelativeUrl"/>
+      <attrKeyMap attr="destFileName" key="DestinationFileName"/>
+      <attrKeyMap attr="destFileExt" key="DestinationFileExtension"/>
+      <attrKeyMap attr="loginType" key="LogonType"/>
+      <attrKeyMap attr="user" key="LogonUserDisplayName"/>
+      <attrKeyMap attr="folder" key="DestFolder"/>
+      <attrKeyMap attr="hostIpAddr" key="ActorIpAddress"/>
+      <attrKeyMap attr="httpUserAgent" key="BrowserName"/>
+      <attrKeyMap attr="deviceType" key="DeviceType"/>
+      <attrKeyMap attr="objType" key="ObjectType"/>
+      <attrKeyMap attr="userType" key="UserType"/>
+      <attrKeyMap attr="eventSource" key="Workload"/>
+      <attrKeyMap attr="userId" key="UserId"/>
+      <attrKeyMap attr="user" key="UserId"/>
+      <attrKeyMap attr="osObjType" key="Endpoint"/>
+      <attrKeyMap attr="infoURL" key="SiteUrl"/>
+      <attrKeyMap attr="targetOsObjType" key="ItemType"/>
+      <attrKeyMap attr="eventSource" key="EventSource"/>
+      <attrKeyMap attr="resourceName" key="SourceName"/>
+      <attrKeyMap attr="httpUserAgent" key="UserAgent"/>
+      <attrKeyMap attr="srcDomain" key="MachineDomainInfo"/>
+      <attrKeyMap attr="targetUser" key="TargetUserOrGroupName"/>
+      <attrKeyMap attr="targetUserGrp" key="TargetUserOrGroupType"/>
+      <attrKeyMap attr="details" key="ClientInfoString"/>
+      <attrKeyMap attr="srcIpAddr" key="ClientIPAddress"/>
+      <attrKeyMap attr="phyMachName" key="ClientMachineName"/>
+      <attrKeyMap attr="procName" key="ClientProcessName"/>
+      <attrKeyMap attr="p1Sender" key="P1Sender"/>
+      <attrKeyMap attr="p2Sender" key="P2Sender"/>
+      <attrKeyMap attr="detectionMethod" key="DetectionMethod"/>
+      <attrKeyMap attr="creationTime" key="CreationTime"/>
+      <attrKeyMap attr="verdict" key="Verdict"/>
+      <attrKeyMap attr="srcAppVersion" key="ClientVersion"/>
+      <attrKeyMap attr="item" key="Item"/>
+      <attrKeyMap attr="folder" key="Folder"/>
+      <attrKeyMap attr="activityType" key="AzureActiveDirectoryEventType"/>
+      <attrKeyMap attr="activityType" key="EventType"/>
+      <attrKeyMap attr="appName" key="Application"/>
+      <attrKeyMap attr="details" key="Client"/>
+      <attrKeyMap attr="srcDomain" key="UserDomain"/>
+      <attrKeyMap attr="applicationId" key="ApplicationId"/>
+      <attrKeyMap attr="errReason" key="LogonError"/>
+      <attrKeyMap attr="startTime" key="StartTime"/>
+      <attrKeyMap attr="comment" key="GenericInfo"/>
+      <attrKeyMap attr="_status" key="LoginStatus"/>
+      <attrKeyMap attr="status" key="OperationResult"/>
+      <attrKeyMap attr="status" key="ResultStatus"/>
+      <attrKeyMap attr="httpUserAgent" key="ExtendedProperties.find(Name='UserAgent', Value)"/>
+      <attrKeyMap attr="crmOrg" key="CrmOrganizationUniqueName"/>
+      <attrKeyMap attr="instanceURL" key="InstanceUrl"/>
+      <attrKeyMap attr="itemType" key="ItemType"/>
+      <attrKeyMap attr="itemURL" key="ItemUrl"/>
+      <attrKeyMap attr="ServiceName" key="ServiceName"/>
+    </collectAndSetAttrByJSON>
+    <when test="not_exist status">
+<when test="exist _status">
+<choose>
+<when test="$_status = '0'">
+      <setEventAttribute attr="status">success</setEventAttribute>
+    </when>
+    <otherwise>
+      <setEventAttribute attr="status">failed</setEventAttribute>
+    </otherwise>
+</choose>
+</when>
+</when>
+    <when test="exist _actionTime">
+      <collectFieldsByRegex src="$_actionTime">
+        <regex><![CDATA[<_year:gPatYear>-<_mon:gPatMonNum>-<_day:gPatDay>T<_time:gPatTime><_tz:gPatTimeZone>]]></regex>
+      </collectFieldsByRegex>
+      <setEventAttribute attr="deviceTime">toDateTime($_mon, $_day, $_year, $_time, $_tz)</setEventAttribute>
+    </when>
+    <when test="exist opName">
+      <setEventAttribute attr="opName">trimAttribute($opName, ".")</setEventAttribute>
+    </when>
+    <setEventAttribute attr="eventType">combineMsgId("MS_OFFICE365_",$opName)</setEventAttribute>
+    <when test="exist status">
+      <setEventAttribute attr="eventType">combineMsgId("MS_OFFICE365_",$opName,"_",$status)</setEventAttribute>
+    </when>
+    <setEventAttribute attr="eventType">replaceStringByRegex($eventType, "\s+", "_")</setEventAttribute>
+    <when test="exist infoURL">
+      <setEventAttribute attr="destName">extractHostFromURL($infoURL)</setEventAttribute>
+    </when>
+    <when test="matches($user, '\@')">
+      <collectFieldsByRegex src="$user">
+        <regex><![CDATA[\@<mailDomain:gPatMesgBody>]]></regex>
+      </collectFieldsByRegex>
+    </when>
+    <when test="matches($_body, 'High')">
+      <setEventAttribute attr="eventSeverity">10</setEventAttribute></when>
+    <when test="matches($_body, 'Medium')">
+      <setEventAttribute attr="eventSeverity">5</setEventAttribute></when>
+    <when test="matches($_body, 'Low')">
+      <setEventAttribute attr="eventSeverity">1</setEventAttribute></when>
+</parsingInstructions>

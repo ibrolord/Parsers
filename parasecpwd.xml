@@ -1,0 +1,19 @@
+<eventFormatRecognizer><![CDATA[Pleasant Password Server\W]]></eventFormatRecognizer>
+<patternDefinitions>
+    <pattern name="gpatCs5"><![CDATA[cs5=(\w+\s?\w+)]]></pattern>
+</patternDefinitions>
+<parsingInstructions>
+    <collectFieldsByRegex src="$_rawmsg">
+      <regex><![CDATA[Pleasant Password Server<_databody:gPatMesgBody>]]></regex>
+    </collectFieldsByRegex>
+    <setEventAttribute attr="msg">$_databody</setEventAttribute>
+    <collectAndSetAttrByPos src="$_rawmsg" sep=';'>
+      <attrPosMap attr="appSvrName" pos='2'/>
+      <attrPosMap attr="serviceName" pos='3'/>
+      <attrPosMap attr="user" pos='4'/>
+      <attrPosMap attr="appStatus" pos='5'/>
+      <attrPosMap attr="srcAction" pos='6'/>
+      <attrPosMap attr="targetUser" pos='7'/>
+      <attrPosMap attr="destAction" pos='8'/>
+    </collectAndSetAttrByPos>
+</parsingInstructions>

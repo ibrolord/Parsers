@@ -1,0 +1,32 @@
+<eventFormatRecognizer><![CDATA[onion02]]></eventFormatRecognizer>
+<patternDefinitions>
+    <pattern name="gpatCs5"><![CDATA[cs5=(\w+\s?\w+)]]></pattern>
+</patternDefinitions>
+<parsingInstructions>
+    <collectFieldsByRegex src="$_rawmsg">
+      <regex><![CDATA[onion02 sguil_alert:\s<:gPatTime>\s<_body:gPatMesgBody>]]> </regex>
+    </collectFieldsByRegex>
+    <setEventAttribute attr="msg">$_body</setEventAttribute>
+    <when test="matches($_rawmsg, 'pid')">
+      <collectFieldsByRegex src="$_rawmsg">
+        <regex><![CDATA[pid\W<webAppId:gPatMesgBodyMin>\W]]></regex>
+      </collectFieldsByRegex>
+    </when>
+    <when test="matches($_rawmsg, 'INDICATOR-COMPROMISE')">
+      <collectFieldsByRegex src="$_rawmsg">
+        <regex><![CDATA[INDICATOR-COMPROMISE\s<user:gPatMesgBodyMin>\}]]></regex>
+      </collectFieldsByRegex>
+      <collectFieldsByRegex src="$_rawmsg">
+        <regex><![CDATA[INDICATOR-COMPROMISE.+\}<_body2:gPatMesgBodyMin>]]></regex>
+      </collectFieldsByRegex>
+      <setEventAttribute attr="eventType">INDICATOR-COMPROMISE</setEventAttribute>
+      <collectAndSetAttrByPos src="$_body2" sep=" ">
+        <attrPosMap attr="secAction" pos="1"/>
+      </collectAndSetAttrByPos>
+      </when>
+    <when test="matches($_rawmsg, 'Alert Received')">
+      <collectFieldsByRegex src="$_rawmsg">
+        <regex><![CDATA[Alert\sReceived:\s<details:gPatMesgBodyMin>\s\d\s\d+\s\{]]></regex>
+      </collectFieldsByRegex>
+    </when>
+</parsingInstructions>

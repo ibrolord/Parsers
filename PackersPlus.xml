@@ -1,0 +1,137 @@
+<eventFormatRecognizer><![CDATA[CAL-SMARTZONE]]></eventFormatRecognizer>
+<patternDefinitions>
+    <pattern name="gpatCs5"><![CDATA[cs5=(\w+\s?\w+)]]></pattern>
+</patternDefinitions>
+<parsingInstructions>
+	<collectFieldsByRegex src="$_rawmsg">
+      <regex><![CDATA[CAL-SMARTZONE<_databody:gPatMesgBody>]]></regex>
+    </collectFieldsByRegex>
+  <when test="matches($_rawmsg, 'mosquitto')">
+  		<collectFieldsByRegex src="$_rawmsg">
+ 		 <regex><![CDATA[mosquitto\[28817\]:\s<_notify:gPatMesgBody>]]></regex>
+  		</collectFieldsByRegex>
+  		<when test="matches($_rawmsg, 'Sending')">
+  		<collectFieldsByRegex src="$_notify">
+      		 <regex><![CDATA[Sending\s<send:gPatMesgBodyMin>\sto\s<receive:gPatMesgBody>]]></regex>
+        </collectFieldsByRegex>
+        </when>	
+        <when test="matches($_rawmsg, 'Received')">
+  		<collectFieldsByRegex src="$_notify">
+      		 <regex><![CDATA[Received\s<receive:gPatMesgBodyMin>\sfrom\s<send:gPatMesgBody>]]></regex>
+        </collectFieldsByRegex>
+        </when>	
+     <setEventAttribute attr="eventType">mosquito</setEventAttribute>
+  </when>
+  
+  <when test="matches($_rawmsg, 'sudo:\s\sscpuser')">
+  		<collectFieldsByRegex src="$_rawmsg">
+ 		  <regex><![CDATA[scpuser\s:\s<_sudo:gPatMesgBody>]]></regex>
+  		</collectFieldsByRegex>
+  	<collectFieldsByKeyValuePair kvsep="=" sep=" ; " src="$_sudo">
+        <attrKeyMap attr="tty" key="TTY"/>
+        <attrKeyMap attr="pwd" key="PWD"/>  	
+        <attrKeyMap attr="userName" key="USER"/> 
+        <attrKeyMap attr="command" key="COMMAND"/>
+        </collectFieldsByKeyValuePair> 
+   <setEventAttribute attr="eventType">Shell Access</setEventAttribute>
+  </when>
+
+  <when test="matches($_rawmsg, 'Communicator:')">
+  		<collectFieldsByRegex src="$_rawmsg">
+ 		  <regex><![CDATA[Communicator:\s<communicator:gPatMesgBody>]]></regex>
+  		</collectFieldsByRegex>
+     <setEventAttribute attr="eventType">Communicator</setEventAttribute>
+
+  </when>
+
+  <when test="matches($_rawmsg, 'Web:')">
+  		<collectFieldsByRegex src="$_rawmsg">
+ 		  <regex><![CDATA[Web:\s<webContextPath:gPatMesgBody>]]></regex>
+  		</collectFieldsByRegex>
+     <setEventAttribute attr="eventType">Web</setEventAttribute>
+
+  </when>  
+
+  <when test="matches($_rawmsg, 'rcliproxyd')">
+  		<collectFieldsByRegex src="$_rawmsg">
+ 		  <regex><![CDATA[rcliproxyd<rcliProxyd:gPatMesgBody>]]></regex>
+  		</collectFieldsByRegex>
+     <setEventAttribute attr="eventType">rcliProxyd</setEventAttribute>
+
+  </when>
+
+    <when test="matches($_rawmsg, 'c.r.w.d.l.LicenseSummaryService')">
+      <collectFieldsByRegex src="$_rawmsg">
+        <regex><![CDATA[Core:\s<_license:gPatMesgBody>]]></regex>
+      </collectFieldsByRegex>
+      <collectFieldsByRegex src="$_rawmsg">
+        <regex><![CDATA[Core:\s<licenseServer:gPatMesgBody>]]></regex>
+      </collectFieldsByRegex>
+    <when test="matches($_license, 'licenseSummary')">
+      <collectFieldsByRegex src="$_rawmsg">
+        <regex><![CDATA[licenseSummary=<_licensesum:gPatMesgBody>]]></regex>
+      </collectFieldsByRegex>
+      <setEventAttribute attr="_licensesum">replaceStringByRegex($_licensesum, "\[", "")</setEventAttribute>
+      <setEventAttribute attr="_licensesum">replaceStringByRegex($_licensesum, "\]", "")</setEventAttribute>
+      <setEventAttribute attr="_licensesum">replaceStringByRegex($_licensesum, "{", "")</setEventAttribute>
+      <setEventAttribute attr="_licensesum">replaceStringByRegex($_licensesum, "}", "")</setEventAttribute>
+      <setEventAttribute attr="_licensesum">replaceStringByRegex($_licensesum, "\"", "")</setEventAttribute>
+      <setEventAttribute attr="msg">$_licensesum</setEventAttribute>
+      <collectFieldsByKeyValuePair kvsep=":" sep="," src="$_licensesum">
+        <attrKeyMap attr="tunnel_l3gre" key="tunnel_l3gre"/>
+        <attrKeyMap attr="switchNumber" key="switchNumber"/>
+        <attrKeyMap attr="built_in_reports" key="built_in_reports"/>
+        <attrKeyMap attr="tunnel2_ext_gw" key="tunnel2_ext_gw"/>
+        <attrKeyMap attr="apSuppLicExpiryDate" key="apSuppLicExpiryDate"/>
+        <attrKeyMap attr="vdpBandwdithLicUsageJSONArray" key="vdpBandwdithLicUsageJSONArray"/>
+        <attrKeyMap attr="hasDpNatAlg" key="hasDpNatAlg"/>
+      </collectFieldsByKeyValuePair>
+    </when>
+         <setEventAttribute attr="eventType">License Information</setEventAttribute>
+
+  </when>
+
+  <when test="matches($_rawmsg, 'Core: @@')">
+  		<collectFieldsByRegex src="$_rawmsg">
+ 		 <regex><![CDATA[Core: @@<seqNum:gPatMesgBodyMin>,<an:gPatMesgBodyMin>,<_databody:gPatMesgBody>]]></regex>
+  		</collectFieldsByRegex>
+  	    <setEventAttribute attr="_databody">replaceStringByRegex($_databody, "\"","")</setEventAttribute>
+
+      <setEventAttribute attr="msg">$_databody</setEventAttribute>
+  		<collectFieldsByKeyValuePair kvsep="=" sep="," src="$_databody">
+        <attrKeyMap attr="arpDestMACAddr" key="apMac"/>
+        <attrKeyMap attr="clientMAC" key="clientMac"/>
+        <attrKeyMap attr="wlanSsid" key="ssid"/>
+        <attrKeyMap attr="bssId" key="bssid"/>
+        <attrKeyMap attr="userId" key="userId"/>
+        <attrKeyMap attr="wlanId" key="wlanId"/>
+        <attrKeyMap attr="intfName" key="iface"/>
+        <attrKeyMap attr="tenantName" key="tenantUUID"/>
+        <attrKeyMap attr="apName" key="apName"/>
+        <attrKeyMap attr="userName" key="userName"/>
+        <attrKeyMap attr="hostVLAN" key="vlanId"/>
+        <attrKeyMap attr="radioBand" key="radio"/>
+        <attrKeyMap attr="encryptAlgo" key="encryption"/>
+        <attrKeyMap attr="wlanRssi" key="Instantaneous rssi"/>
+        <attrKeyMap attr="Xput" key="Xput"/>
+        <attrKeyMap attr="fwVersion" key="fwVersion"/>
+        <attrKeyMap attr="hostModel" key="model"/>
+        <attrKeyMap attr="zoneUUID" key="zoneUUID"/>
+        <attrKeyMap attr="zoneName" key="zoneName"/>
+        <attrKeyMap attr="timeZone" key="timeZone"/>
+        <attrKeyMap attr="apLocation" key="apLocation"/>
+        <attrKeyMap attr="apGps" key="apGps"/>
+        <attrKeyMap attr="apIpAddress" key="apIpAddress"/>
+        <attrKeyMap attr="apIpv6Address" key="apIpv6Address"/>
+        <attrKeyMap attr="apGroupUUID" key="apGroupUUID"/>
+        <attrKeyMap attr="domain" key="domainId"/>
+        <attrKeyMap attr="serialNumber" key="serialNumber"/>
+        <attrKeyMap attr="wlanGroupUUID" key="wlanGroupUUID"/>
+        <attrKeyMap attr="idealEventVersion" key="idealEventVersion"/>
+        <attrKeyMap attr="apDescription" key="apDescription"/>
+        </collectFieldsByKeyValuePair>
+         <setEventAttribute attr="eventType">Core Message</setEventAttribute>
+
+  </when>
+</parsingInstructions>  
+    

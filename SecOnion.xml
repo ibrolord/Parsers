@@ -1,0 +1,25 @@
+<eventFormatRecognizer><![CDATA[onion02]]></eventFormatRecognizer>
+<patternDefinitions>
+    <pattern name="gpatCs5"><![CDATA[cs5=(\w+\s?\w+)]]></pattern>
+</patternDefinitions>
+<parsingInstructions>
+    <collectFieldsByRegex src="$_rawmsg">
+      <regex><![CDATA[onion02 sguil_alert:\s<:gPatTime>\s<_body:gPatMesgBody>]]> </regex>
+    </collectFieldsByRegex>
+    <setEventAttribute attr="msg">$_body</setEventAttribute>
+    <choose>
+    <when test="matches($_rawmsg, 'pid')">
+      <collectFieldsByRegex src="$_rawmsg">
+        <regex><![CDATA[pid?<appPort:gPatWord>?]]></regex>
+      </collectFieldsByRegex>
+    </when>
+    <when test="matches($_rawmsg, 'INDICATOR-COMPROMISE')">
+      <collectFieldsByRegex src="$_rawmsg">
+        <regex> <![CDATA[INDICATOR-COMPROMISE\s<incidentDetail:gPatMesgBodyMin>}]]> </regex>
+      </collectFieldsByRegex>
+      <setEventAttribute attr="eventType">$_incidentDetail</setEventAttribute>
+    </when>
+  </choose>
+
+
+</parsingInstructions>

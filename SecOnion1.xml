@@ -1,0 +1,45 @@
+<eventFormatRecognizer><![CDATA[onion02]]></eventFormatRecognizer>
+<patternDefinitions>
+    <pattern name="gpatCs5"><![CDATA[cs5=(\w+\s?\w+)]]></pattern>
+</patternDefinitions>
+<parsingInstructions>
+    <collectFieldsByRegex src="$_rawmsg">
+      <regex><![CDATA[onion02 sguil_alert:\s<:gPatTime>\s<_body:gPatMesgBody>]]> </regex>
+    </collectFieldsByRegex>
+    <setEventAttribute attr="msg">$_body</setEventAttribute>
+    <when test="matches($_rawmsg, 'pid')">
+      <collectFieldsByRegex src="$_rawmsg">
+        <regex><![CDATA[pid\W<webAppId:gPatMesgBodyMin>\W]]></regex>
+      </collectFieldsByRegex>
+    </when>
+    <when test="matches($_rawmsg, 'INDICATOR-COMPROMISE')">
+      <collectFieldsByRegex src="$_rawmsg">
+        <regex><![CDATA[INDICATOR-COMPROMISE\s<user:gPatMesgBodyMin>\}]]></regex>
+      </collectFieldsByRegex>
+      <setEventAttribute attr="eventType">INDICATOR-COMPROMISE</setEventAttribute>
+    </when>
+    <when test="matches($_rawmsg, 'BROWSER-IE')">
+      <collectFieldsByRegex src="$_rawmsg">
+        <regex><![CDATA[BROWSER-IE\s<user:gPatMesgBodyMin>\}]]></regex>
+      </collectFieldsByRegex>
+      <setEventAttribute attr="eventType">BROWSER-IE</setEventAttribute>
+    </when>
+    <when test="matches($_rawmsg, 'spp_bo')">
+      <collectFieldsByRegex src="$_rawmsg">
+        <regex><![CDATA[spp_bo\W\s<topicName:gPatMesgBodyMin>\}]]></regex>
+      </collectFieldsByRegex>
+      <setEventAttribute attr="eventType">spp_bo</setEventAttribute>
+    </when>
+    <when test="matches($_rawmsg, '\[OSSEC\]')">
+      <collectFieldsByRegex src="$_rawmsg">
+        <regex><![CDATA[\[OSSEC\]\s<user:gPatMesgBodyMin>\}]]></regex>
+      </collectFieldsByRegex>
+      <setEventAttribute attr="eventType">OSSEC</setEventAttribute>
+    </when>
+    <when test="matches($_rawmsg, 'Alert Received')">
+      <collectFieldsByRegex src="$_rawmsg">
+        <regex><![CDATA[Alert\sReceived:\s<details:gPatMesgBodyMin>\s\d\s\d+\s\{]]></regex>
+      </collectFieldsByRegex>
+    </when>
+
+</parsingInstructions>

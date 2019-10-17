@@ -1,0 +1,56 @@
+<eventFormatRecognizer><![CDATA[awc\[\d+\]|cli\[\d+\]|mdns\[\d+\]|sapd\[\d+\]|stm\[\d+\]]]></eventFormatRecognizer>
+<patternDefinitions>
+    <pattern name="PatType"><![CDATA[\w+\[\d+\]]]></pattern>
+    <pattern name="PatMAC"><![CDATA[\w\w:\w\w:\w\w:\w\w:\w\w:\w\w]]></pattern>
+    <pattern name="PatSSID"><![CDATA[\w+]]></pattern>
+</patternDefinitions>
+<parsingInstructions>
+    <collectFieldsByRegex src="$_rawmsg">
+      <regex><![CDATA[<:gPatMon>\s+<:gPatDay>\s+<:gPatTime>\s+<:gPatYear>\s+<:gPatIpV4Dot>.+?<eventType:PatType>:\s+<_body:gPatMesgBody>]]></regex>
+    </collectFieldsByRegex>
+    <setEventAttribute attr="msg">$_body</setEventAttribute>
+    <choose>
+      <when test="matches($_rawmsg, 'attack')">
+        <setEventAttribute attr="eventSeverity">7</setEventAttribute>
+        <setEventAttribute attr="eventType">combineMsgId("Aruba AP-", $eventType,"-ATTACK")</setEventAttribute>
+      </when>
+      <when test="matches($_rawmsg, 'client \w\w:')">
+        <collectFieldsByRegex src="$_rawmsg">
+          <regex><![CDATA[.+?client\s<destMACAddr:PatMAC>]]></regex>
+        </collectFieldsByRegex>
+        <setEventAttribute attr="eventType">combineMsgId("Aruba AP-", $eventType)</setEventAttribute>
+      </when>
+      <when test="matches($_rawmsg, 'cli\W3801\W')">
+        <collectFieldsByRegex src="$_rawmsg">
+          <regex><![CDATA[.+?,\s<_body2:gPatMesgBody>\.]]></regex>
+        </collectFieldsByRegex>
+        <setEventAttribute attr="msg">$_body2</setEventAttribute>
+        <collectFieldsByKeyValuePair kvsep="-" sep=" " src="$_body2">
+          <attrKeyMap attr="destMACAddr" key="mac"/>
+          <attrKeyMap attr="wlanSsid" key="essid"/>
+        </collectFieldsByKeyValuePair>
+        <setEventAttribute attr="eventType">combineMsgId("Aruba AP-", $eventType)</setEventAttribute>
+      </when>
+      <when test="matches($_rawmsg, 'client\s\(')">
+        <collectFieldsByRegex src="$_rawmsg">
+          <regex><![CDATA[.+?client\s\(<destMACAddr:PatMAC>]]></regex>
+        </collectFieldsByRegex>
+        <setEventAttribute attr="eventType">combineMsgId("Aruba AP-", $eventType)</setEventAttribute>
+      </when>
+      <otherwise>
+        <setEventAttribute attr="eventType">combineMsgId("Aruba AP-", $eventType)</setEventAttribute>
+      </otherwise>
+    </choose>
+    <switch>
+      <case>
+        <collectFieldsByRegex src="$_rawmsg">
+          <regex><![CDATA[.+?mac-<destMACAddr:PatMAC>.+?essid-<wlanSsid:PatSSID>]]></regex>
+        </collectFieldsByRegex>
+      </case>
+      <case>
+        <collectFieldsByRegex src="$_rawmsg">
+          <regex><![CDATA[.+?essid-<wlanSsid:PatSSID>]]></regex>
+        </collectFieldsByRegex>
+      </case>
+    </switch>
+</parsingInstructions>

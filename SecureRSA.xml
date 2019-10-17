@@ -1,0 +1,71 @@
+<eventFormatRecognizer><![CDATA[gue1sv031.ghesixp.dom]]></eventFormatRecognizer>
+<patternDefinitions>
+    <pattern name="gpatCs5"><![CDATA[cs5=(\w+\s?\w+)]]></pattern>
+</patternDefinitions>
+<parsingInstructions>
+      <when test="matches($_rawmsg, 'audit.runtime.com.rsa.ims.authn.impl.AuthenticationBrokerImpl')">
+    <collectFieldsByRegex src="$_rawmsg">
+      <regex><![CDATA[gue1sv031.ghesixp.dom\W\s<_body:gPatMesgBody>]]></regex>
+    </collectFieldsByRegex>
+    <collectAndSetAttrByPos src="$_rawmsg" sep=','>
+      <attrPosMap attr="sessionId" pos='4'/>
+      <attrPosMap attr="batchId" pos='5'/>
+      <attrPosMap attr="serial" pos='6'/>
+      <attrPosMap attr="sigId" pos='7'/>
+      <attrPosMap attr="clientIp" pos='8'/>
+      <attrPosMap attr="serverNodeIp" pos='9'/>
+      <attrPosMap attr="compKey" pos='10'/>
+      <attrPosMap attr="logLevel" pos='11'/>
+      <attrPosMap attr="actionResult" pos='12'/>
+      <attrPosMap attr="resultKey" pos='13'/>
+      <attrPosMap attr="actorId" pos='14'/>
+      <attrPosMap attr="realmId" pos='15'/>
+      <attrPosMap attr="secdomId" pos='16'/>
+      <attrPosMap attr="idsrcId" pos='17'/>
+      <attrPosMap attr="uuid" pos='18'/>
+      <attrPosMap attr="fname" pos='19'/>
+      <attrPosMap attr="lName" pos='20'/>
+      <attrPosMap attr="agentId" pos='21'/>
+      <attrPosMap attr="agentSecdomId" pos='22'/>
+      <attrPosMap attr="agentIp" pos='23'/>
+      <attrPosMap attr="agentName" pos='24'/>
+      <attrPosMap attr="sessionAgentType" pos='25'/>
+      <attrPosMap attr="authenMethod" pos='26'/>
+      <attrPosMap attr="authName" pos='27'/>
+      <attrPosMap attr="policyID" pos='28'/>
+      <attrPosMap attr="policyExp" pos='29'/>
+    </collectAndSetAttrByPos>
+</when>
+
+    <collectFieldsByRegex src="$_rawmsg">
+      <regex><![CDATA[gue1sv031.ghesixp.dom\W\s<_body:gPatMesgBody>]]></regex>
+    </collectFieldsByRegex>
+    <collectAndSetAttrByPos src="$_rawmsg" sep=','>
+      <attrPosMap attr="sessionId" pos='4'/>
+      <attrPosMap attr="batchId" pos='5'/>
+      <attrPosMap attr="serial" pos='6'/>
+      <attrPosMap attr="sigId" pos='7'/>
+      <attrPosMap attr="clientIp" pos='8'/>
+      <attrPosMap attr="serverNodeIp" pos='9'/>
+      <attrPosMap attr="compKey" pos='10'/>
+      <attrPosMap attr="logLevel" pos='11'/>
+      <attrPosMap attr="actionResult" pos='12'/>
+      <attrPosMap attr="resultKey" pos='13'/>
+      <attrPosMap attr="actorId" pos='14'/>
+      <attrPosMap attr="idsrcId" pos='15'/>
+      <attrPosMap attr="secdomId" pos='16'/>
+      <attrPosMap attr="euid" pos='17'/>
+      <attrPosMap attr="lName" pos='18'/>
+      <attrPosMap attr="realmId" pos='19'/>
+      <attrPosMap attr="objType" pos='20'/>
+      <attrPosMap attr="objSrc" pos='21'/>
+      <attrPosMap attr="objSecDom" pos='22'/>
+      <attrPosMap attr="objNameObj2Type" pos='23'/>
+      <attrPosMap attr="objID" pos='24'/>
+      <attrPosMap attr="objSrc2" pos='25'/>
+      <attrPosMap attr="objSecDom2" pos='26'/>
+      <attrPosMap attr="osObjName" pos='27'/>
+    </collectAndSetAttrByPos>
+
+
+</parsingInstructions>
